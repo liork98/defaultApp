@@ -45,7 +45,7 @@ export async function addQuestionAction(
   difficulty: Difficulty,
   type: QuestionType,
   url: string,
-  date: Date
+  dateStr: string // Pass the formatted date string "yyyy-MM-dd"
 ) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -69,8 +69,6 @@ export async function addQuestionAction(
     ])
   }
 
-  const scheduledDate = format(date, 'yyyy-MM-dd')
-
   const { data, error } = await supabase
     .from('questions')
     .insert([
@@ -81,7 +79,7 @@ export async function addQuestionAction(
         type,
         url,
         status: 'Pending',
-        scheduled_date: scheduledDate
+        scheduled_date: dateStr
       }
     ])
     .select()

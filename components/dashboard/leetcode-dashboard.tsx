@@ -119,7 +119,7 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
           nextReviewDate: dateStr,
         },
       });
-      await addQuestionAction(title, difficulty, type, url, date);
+      await addQuestionAction(title, difficulty, type, url, dateStr);
     });
   };
 
