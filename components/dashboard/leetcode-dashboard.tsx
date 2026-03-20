@@ -7,15 +7,17 @@ import { CalendarHeader } from "./calendar-header";
 import { DayView } from "./day-view";
 import { AddQuestionModal } from "./add-question-modal";
 import { addQuestionAction, toggleCompleteAction, tryAgainAction, deleteQuestionAction } from "@/lib/actions";
-import { format, addDays, parseISO } from "date-fns";
-import { formatIsraelDay, getIsraelToday } from "@/lib/utils";
+import { format, addDays, parseISO, isSameDay } from "date-fns";
+import { formatIsraelDay, getIsraelTodayStr, parseIsraelDay } from "@/lib/utils";
 import type { Question, Difficulty, QuestionType, QuestionStatus } from "@/lib/types";
 
 export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Question[] }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(getIsraelToday());
+  const [selectedDateStr, setSelectedDateStr] = useState(getIsraelTodayStr());
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  const selectedDateObj = useMemo(() => parseIsraelDay(selectedDateStr), [selectedDateStr]);
 
   const [optimisticQuestions, addOptimisticQuestion] = useOptimistic(
     initialQuestions,
@@ -34,8 +36,7 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
         case "TRY_AGAIN":
           const target = state.find((q) => q.id === action.payload.id);
           if (!target) return state;
-          const baseDate = parseISO(target.dateAdded.split("T")[0]);
-          baseDate.setHours(12, 0, 0, 0);
+          const baseDate = parseIsraelDay(target.dateAdded.split("T")[0]);
           const threeDaysLaterStr = formatIsraelDay(addDays(baseDate, 3));
           return state
             .map((q) => (q.id === action.payload.id ? { ...q, status: "Failed" } : q))
@@ -53,13 +54,12 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
     }
   );
 
-  const getQuestionsForDate = (date: Date) => {
-    const selectedKey = formatIsraelDay(date);
+  const getQuestionsForDate = (dateStr: string) => {
     const blitzQuestions = optimisticQuestions.filter(
-      (q) => q.type === "Blitz" && q.nextReviewDate.startsWith(selectedKey)
+      (q) => q.type === "Blitz" && q.nextReviewDate.startsWith(dateStr)
     );
     const newQuestions = optimisticQuestions.filter(
-      (q) => q.type === "New" && q.dateAdded.startsWith(selectedKey)
+      (q) => q.type === "New" && q.dateAdded.startsWith(dateStr)
     );
     return { blitzQuestions, newQuestions };
   };
@@ -74,7 +74,7 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
     );
 
     let streak = 0;
-    let current = getIsraelToday();
+    let current = parseIsraelDay(getIsraelTodayStr());
     while (true) {
       const key = formatIsraelDay(current);
       if (!completedDayKeys.has(key)) break;
@@ -83,8 +83,9 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
     }
 
     const activityMap: Record<string, number> = {};
+    const today = parseIsraelDay(getIsraelTodayStr());
     for (let i = 0; i < 30; i++) {
-      const d = addDays(getIsraelToday(), -i);
+      const d = addDays(today, -i);
       const key = formatIsraelDay(d);
       activityMap[key] = optimisticQuestions.filter((q) => {
         if (q.status !== "Completed") return false;
@@ -148,7 +149,7 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
     });
   };
 
-  const { blitzQuestions, newQuestions } = getQuestionsForDate(selectedDate);
+  const { blitzQuestions, newQuestions } = getQuestionsForDate(selectedDateStr);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -171,14 +172,14 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
       >
         {/* Calendar Header */}
         <CalendarHeader
-          selectedDate={selectedDate}
-          onDateChange={setSelectedDate}
+          selectedDate={selectedDateObj}
+          onDateChange={(date) => setSelectedDateStr(formatIsraelDay(date))}
           activityMap={getStatistics.activityMap}
         />
 
         {/* Main View */}
         <DayView
-          date={selectedDate}
+          date={selectedDateObj}
           blitzQuestions={blitzQuestions}
           newQuestions={newQuestions}
           onToggleComplete={handleToggleComplete}
@@ -192,7 +193,7 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
         open={addModalOpen}
         onOpenChange={setAddModalOpen}
         onAddQuestion={handleAddQuestion}
-        selectedDate={selectedDate}
+        selectedDate={selectedDateObj}
       />
     </div>
   );

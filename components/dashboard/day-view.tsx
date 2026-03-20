@@ -5,7 +5,8 @@ import { RefreshCw, Sparkles } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QuestionItem } from "./question-item";
 import { Question } from "@/lib/types";
-import { isToday } from "date-fns";
+import { isSameDay } from "date-fns";
+import { getIsraelTodayStr, parseIsraelDay } from "@/lib/utils";
 
 interface DayViewProps {
   date: Date;
@@ -25,7 +26,8 @@ export function DayView({
   onDelete,
 }: DayViewProps) {
   const isEmpty = blitzQuestions.length === 0 && newQuestions.length === 0;
-  const emptyMessage = isToday(date)
+  const isTodayDate = isSameDay(date, parseIsraelDay(getIsraelTodayStr()));
+  const emptyMessage = isTodayDate
     ? "No questions scheduled for today"
     : "No questions scheduled for this day";
 

@@ -15,7 +15,7 @@ import {
   eachDayOfInterval,
 } from "date-fns";
 import { useMemo, useRef, useEffect } from "react";
-import { getIsraelToday, formatIsraelDay } from "@/lib/utils";
+import { getIsraelTodayStr, formatIsraelDay, parseIsraelDay } from "@/lib/utils";
 
 interface CalendarHeaderProps {
   selectedDate: Date;
@@ -55,7 +55,7 @@ export function CalendarHeader({
 
   const goToPrevWeek = () => onDateChange(subDays(selectedDate, 7));
   const goToNextWeek = () => onDateChange(addDays(selectedDate, 7));
-  const goToToday = () => onDateChange(getIsraelToday());
+  const goToToday = () => onDateChange(parseIsraelDay(getIsraelTodayStr()));
 
   return (
     <div className="border-b border-border/50 bg-card/30 backdrop-blur-sm">
@@ -96,7 +96,7 @@ export function CalendarHeader({
         {visibleDays.map((day) => {
           const dateStr = formatIsraelDay(day);
           const isSelected = isSameDay(day, selectedDate);
-          const isTodayDate = isSameDay(day, getIsraelToday());
+          const isTodayDate = isSameDay(day, parseIsraelDay(getIsraelTodayStr()));
           const hasActivity = (activityMap[dateStr] || 0) > 0;
 
           return (
