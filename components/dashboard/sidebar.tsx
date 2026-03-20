@@ -120,7 +120,7 @@ export function Sidebar({
               {/* Total Solved */}
               <StatCard
                 icon={<CheckCircle2 className="h-4 w-4 text-chart-1" />}
-                label="Total Solved"
+                label="Total Sol3ved"
                 value={statistics.totalSolved}
               />
 
