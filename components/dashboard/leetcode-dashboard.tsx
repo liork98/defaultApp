@@ -106,9 +106,8 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
     difficulty: Difficulty,
     type: QuestionType,
     url: string,
-    date: Date // The modal still provides a Date object
+    dateStr: string
   ) => {
-    const dateStr = format(date, "yyyy-MM-dd");
     const tempId = Math.random().toString();
     
     startTransition(async () => {
@@ -197,7 +196,7 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
         open={addModalOpen}
         onOpenChange={setAddModalOpen}
         onAddQuestion={handleAddQuestion}
-        selectedDate={selectedDateObj}
+        selectedDateStr={selectedDateStr}
       />
     </div>
   );

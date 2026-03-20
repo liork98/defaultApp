@@ -3,9 +3,8 @@
 import { createClient } from '@/lib/supabase-server'
 import { revalidatePath } from 'next/cache'
 import { Difficulty, Question, QuestionStatus, QuestionType } from './types'
-import { addDays, format, parseISO } from 'date-fns'
-import { formatIsraelDay, parseIsraelDay, ISRAEL_TZ } from './utils'
-import { toZonedTime } from 'date-fns-tz'
+import { addDays, format } from 'date-fns'
+import { formatIsraelDay, parseIsraelDay } from './utils'
 
 export async function getQuestions() {
   const supabase = await createClient()
@@ -31,8 +30,8 @@ export async function getQuestions() {
     difficulty: q.difficulty,
     type: q.type,
     status: q.status,
-    dateAdded: q.scheduled_date, // For New questions, it's just the scheduled date
-    nextReviewDate: q.scheduled_date // For Blitz questions, it's also the scheduled date
+    dateAdded: q.scheduled_date, // This is already a string "YYYY-MM-DD" from Supabase
+    nextReviewDate: q.scheduled_date
   })) as Question[]
 }
 

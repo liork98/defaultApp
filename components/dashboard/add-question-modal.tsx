@@ -23,6 +23,7 @@ import { Difficulty, QuestionType } from "@/lib/types";
 import { format } from "date-fns";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getHistoricalQuestions } from "@/lib/actions";
+import { parseIsraelDay } from "@/lib/utils";
 import {
   Command,
   CommandEmpty,
@@ -47,9 +48,9 @@ interface AddQuestionModalProps {
     difficulty: Difficulty,
     type: QuestionType,
     url: string,
-    date: Date
+    dateStr: string
   ) => void;
-  selectedDate: Date;
+  selectedDateStr: string;
 }
 
 interface HistoricalQuestion {
@@ -62,7 +63,7 @@ export function AddQuestionModal({
   open,
   onOpenChange,
   onAddQuestion,
-  selectedDate,
+  selectedDateStr,
 }: AddQuestionModalProps) {
   const [title, setTitle] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
@@ -95,7 +96,7 @@ export function AddQuestionModal({
         difficulty,
         type,
         url.trim(),
-        selectedDate
+        selectedDateStr
       );
       // Reset form
       setTitle("");
@@ -120,7 +121,7 @@ export function AddQuestionModal({
           <DialogTitle>Add Question</DialogTitle>
           <DialogDescription>
             Add a new LeetCode question to your tracker for{" "}
-            {format(selectedDate, "MMMM d, yyyy")}.
+            {format(parseIsraelDay(selectedDateStr), "MMMM d, yyyy")}.
           </DialogDescription>
         </DialogHeader>
 
