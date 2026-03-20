@@ -8,10 +8,13 @@ import {
   Flame,
   CheckCircle2,
   BarChart3,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format, subDays } from "date-fns";
+import { createClient } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -30,6 +33,14 @@ export function Sidebar({
   onAddQuestion,
   statistics,
 }: SidebarProps) {
+  const supabase = createClient();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
+
   return (
     <motion.aside
       initial={false}
@@ -145,6 +156,21 @@ export function Sidebar({
             </div>
           </div>
         )}
+      </div>
+
+      {/* User Section & Logout */}
+      <div className="mt-auto border-t border-border/50 p-3">
+        <Button
+          variant="ghost"
+          onClick={handleLogout}
+          className={cn(
+            "w-full justify-start gap-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive",
+            isCollapsed && "justify-center px-0"
+          )}
+        >
+          <LogOut className="h-4 w-4" />
+          {!isCollapsed && <span>Sign Out</span>}
+        </Button>
       </div>
     </motion.aside>
   );
