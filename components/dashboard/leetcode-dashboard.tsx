@@ -176,7 +176,7 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
         {/* Calendar Header */}
         <CalendarHeader
           selectedDate={selectedDateObj}
-          onDateChange={(date) => setSelectedDateStr(format(date, 'yyyy-MM-dd'))}
+onDateChange={(date) => setSelectedDateStr(formatIsraelDay(date))}
           activityMap={getStatistics.activityMap}
         />
 
