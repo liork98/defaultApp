@@ -131,8 +131,8 @@ export async function tryAgainAction(id: string) {
   if (fetchError || !original) throw fetchError || new Error('Question not found')
 
   const baseDate = parseISO(original.scheduled_date)
-  const tomorrow = addDays(baseDate, 1)
-  const tomorrowStr = format(tomorrow, 'yyyy-MM-dd')
+  const threeDaysLater = addDays(baseDate, 3)
+  const threeDaysLaterStr = format(threeDaysLater, 'yyyy-MM-dd')
 
   // Mark original as failed
   const { error: updateError } = await supabase
@@ -142,7 +142,7 @@ export async function tryAgainAction(id: string) {
 
   if (updateError) throw updateError
 
-  // Create duplicate for tomorrow as Blitz
+  // Create duplicate for 3 days later as Blitz
   const { error: insertError } = await supabase
     .from('questions')
     .insert([
@@ -153,11 +153,28 @@ export async function tryAgainAction(id: string) {
         type: 'Blitz',
         url: original.url,
         status: 'Pending',
-        scheduled_date: tomorrowStr
+        scheduled_date: threeDaysLaterStr
       }
     ])
 
   if (insertError) throw insertError
+
+  revalidatePath('/')
+}
+
+export async function deleteQuestionAction(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) throw new Error('Unauthorized')
+
+  const { error } = await supabase
+    .from('questions')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id)
+
+  if (error) throw error
 
   revalidatePath('/')
 }

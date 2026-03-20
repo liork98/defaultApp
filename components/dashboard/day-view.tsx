@@ -13,6 +13,7 @@ interface DayViewProps {
   newQuestions: Question[];
   onToggleComplete: (id: string) => void;
   onTryAgain: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 export function DayView({
@@ -21,6 +22,7 @@ export function DayView({
   newQuestions,
   onToggleComplete,
   onTryAgain,
+  onDelete,
 }: DayViewProps) {
   const isEmpty = blitzQuestions.length === 0 && newQuestions.length === 0;
   const emptyMessage = isToday(date)
@@ -53,6 +55,7 @@ export function DayView({
                       question={question}
                       onToggleComplete={onToggleComplete}
                       onTryAgain={onTryAgain}
+                      onDelete={onDelete}
                       isBlitzSection
                     />
                   ))
@@ -76,6 +79,7 @@ export function DayView({
                       question={question}
                       onToggleComplete={onToggleComplete}
                       onTryAgain={onTryAgain}
+                      onDelete={onDelete}
                     />
                   ))
                 ) : (

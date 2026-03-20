@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ExternalLink, RotateCcw, RefreshCw } from "lucide-react";
+import { ExternalLink, RotateCcw, RefreshCw, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ interface QuestionItemProps {
   question: Question;
   onToggleComplete: (id: string) => void;
   onTryAgain: (id: string) => void;
+  onDelete: (id: string) => void;
   isBlitzSection?: boolean;
 }
 
@@ -41,6 +42,7 @@ export function QuestionItem({
   question,
   onToggleComplete,
   onTryAgain,
+  onDelete,
   isBlitzSection,
 }: QuestionItemProps) {
   const difficulty = difficultyConfig[question.difficulty];
@@ -77,7 +79,7 @@ export function QuestionItem({
         {/* Title */}
         <span
           className={cn(
-            "flex-1 truncate font-medium",
+            "flex-1 truncate font-medium text-sm",
             isCompleted && "line-through"
           )}
         >
@@ -87,7 +89,7 @@ export function QuestionItem({
         {/* Difficulty Badge */}
         <span
           className={cn(
-            "shrink-0 rounded-md border px-2 py-0.5 text-xs font-medium",
+            "shrink-0 rounded-md border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
             difficulty.className
           )}
         >
@@ -111,23 +113,40 @@ export function QuestionItem({
         </Tooltip>
       </div>
 
-      {/* Try Again Button */}
-      {question.status !== "Completed" && (
+      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Try Again Button */}
+        {question.status !== "Completed" && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onTryAgain(question.id)}
+                className="h-7 gap-1.5 border-rose-500/30 bg-rose-500/10 text-[11px] text-rose-400 hover:border-rose-500/60 hover:bg-rose-500/20 active:scale-[0.98]"
+              >
+                <RotateCcw className="h-3 w-3" />
+                Try Again
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Schedule for 3 days later</TooltipContent>
+          </Tooltip>
+        )}
+
+        {/* Delete Button */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onTryAgain(question.id)}
-              className="h-7 gap-1.5 border-rose-500/30 bg-rose-500/10 text-xs text-rose-400 opacity-0 transition-all hover:border-rose-500/60 hover:bg-rose-500/20 group-hover:opacity-100 active:scale-[0.98]"
+              variant="ghost"
+              size="icon"
+              onClick={() => onDelete(question.id)}
+              className="h-7 w-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
             >
-              <RotateCcw className="h-3 w-3" />
-              Try Again
+              <Trash2 className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Duplicate into tomorrow's Blitz section</TooltipContent>
+          <TooltipContent>Remove Question</TooltipContent>
         </Tooltip>
-      )}
+      </div>
     </motion.div>
   );
 }

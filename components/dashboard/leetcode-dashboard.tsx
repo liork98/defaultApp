@@ -6,7 +6,7 @@ import { Sidebar } from "./sidebar";
 import { CalendarHeader } from "./calendar-header";
 import { DayView } from "./day-view";
 import { AddQuestionModal } from "./add-question-modal";
-import { addQuestionAction, toggleCompleteAction, tryAgainAction } from "@/lib/actions";
+import { addQuestionAction, toggleCompleteAction, tryAgainAction, deleteQuestionAction } from "@/lib/actions";
 import { format, addDays, parseISO } from "date-fns";
 import type { Question, Difficulty, QuestionType, QuestionStatus } from "@/lib/types";
 
@@ -28,10 +28,12 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
               ? { ...q, status: q.status === "Completed" ? "Pending" : "Completed" }
               : q
           );
+        case "DELETE":
+          return state.filter((q) => q.id !== action.payload.id);
         case "TRY_AGAIN":
           const target = state.find((q) => q.id === action.payload.id);
           if (!target) return state;
-          const tomorrowStr = format(addDays(parseISO(target.dateAdded), 1), "yyyy-MM-dd");
+          const threeDaysLaterStr = format(addDays(parseISO(target.dateAdded), 3), "yyyy-MM-dd");
           return state
             .map((q) => (q.id === action.payload.id ? { ...q, status: "Failed" } : q))
             .concat({
@@ -39,8 +41,8 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
               id: Math.random().toString(),
               type: "Blitz",
               status: "Pending",
-              dateAdded: tomorrowStr,
-              nextReviewDate: tomorrowStr,
+              dateAdded: threeDaysLaterStr,
+              nextReviewDate: threeDaysLaterStr,
             });
         default:
           return state;
@@ -136,6 +138,13 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
     });
   };
 
+  const handleDeleteQuestion = async (id: string) => {
+    startTransition(async () => {
+      addOptimisticQuestion({ type: "DELETE", payload: { id } });
+      await deleteQuestionAction(id);
+    });
+  };
+
   const { blitzQuestions, newQuestions } = getQuestionsForDate(selectedDate);
 
   return (
@@ -171,6 +180,7 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
           newQuestions={newQuestions}
           onToggleComplete={handleToggleComplete}
           onTryAgain={handleTryAgain}
+          onDelete={handleDeleteQuestion}
         />
       </motion.main>
 
