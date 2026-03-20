@@ -78,6 +78,12 @@ export function AddQuestionModal({
         setHistoricalQuestions(history as HistoricalQuestion[]);
       };
       fetchHistory();
+    } else {
+      // Reset state when modal closes
+      setTitle("");
+      setDifficulty("Medium");
+      setType("New");
+      setUrl("");
     }
   }, [open]);
 

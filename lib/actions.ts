@@ -131,6 +131,7 @@ export async function tryAgainAction(id: string) {
   if (fetchError || !original) throw fetchError || new Error('Question not found')
 
   const baseDate = parseISO(original.scheduled_date)
+  baseDate.setHours(12, 0, 0, 0)
   const threeDaysLater = addDays(baseDate, 3)
   const threeDaysLaterStr = format(threeDaysLater, 'yyyy-MM-dd')
 

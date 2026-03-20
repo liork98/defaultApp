@@ -33,7 +33,9 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
         case "TRY_AGAIN":
           const target = state.find((q) => q.id === action.payload.id);
           if (!target) return state;
-          const threeDaysLaterStr = format(addDays(parseISO(target.dateAdded), 3), "yyyy-MM-dd");
+          const baseDate = parseISO(target.dateAdded.split("T")[0]);
+          baseDate.setHours(12, 0, 0, 0);
+          const threeDaysLaterStr = format(addDays(baseDate, 3), "yyyy-MM-dd");
           return state
             .map((q) => (q.id === action.payload.id ? { ...q, status: "Failed" } : q))
             .concat({
@@ -100,7 +102,7 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
     url: string,
     date: Date
   ) => {
-    const iso = date.toISOString();
+    const dateStr = format(date, "yyyy-MM-dd");
     const tempId = Math.random().toString();
     
     startTransition(async () => {
@@ -113,8 +115,8 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
           type,
           url,
           status: "Pending",
-          dateAdded: iso,
-          nextReviewDate: iso,
+          dateAdded: dateStr,
+          nextReviewDate: dateStr,
         },
       });
       await addQuestionAction(title, difficulty, type, url, date);
