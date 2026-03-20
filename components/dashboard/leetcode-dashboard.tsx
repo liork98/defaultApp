@@ -8,11 +8,12 @@ import { DayView } from "./day-view";
 import { AddQuestionModal } from "./add-question-modal";
 import { addQuestionAction, toggleCompleteAction, tryAgainAction, deleteQuestionAction } from "@/lib/actions";
 import { format, addDays, parseISO } from "date-fns";
+import { formatIsraelDay, getIsraelToday } from "@/lib/utils";
 import type { Question, Difficulty, QuestionType, QuestionStatus } from "@/lib/types";
 
 export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Question[] }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(getIsraelToday());
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -35,7 +36,7 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
           if (!target) return state;
           const baseDate = parseISO(target.dateAdded.split("T")[0]);
           baseDate.setHours(12, 0, 0, 0);
-          const threeDaysLaterStr = format(addDays(baseDate, 3), "yyyy-MM-dd");
+          const threeDaysLaterStr = formatIsraelDay(addDays(baseDate, 3));
           return state
             .map((q) => (q.id === action.payload.id ? { ...q, status: "Failed" } : q))
             .concat({
@@ -53,7 +54,7 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
   );
 
   const getQuestionsForDate = (date: Date) => {
-    const selectedKey = format(date, "yyyy-MM-dd");
+    const selectedKey = formatIsraelDay(date);
     const blitzQuestions = optimisticQuestions.filter(
       (q) => q.type === "Blitz" && q.nextReviewDate.startsWith(selectedKey)
     );
@@ -73,9 +74,9 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
     );
 
     let streak = 0;
-    let current = new Date();
+    let current = getIsraelToday();
     while (true) {
-      const key = format(current, "yyyy-MM-dd");
+      const key = formatIsraelDay(current);
       if (!completedDayKeys.has(key)) break;
       streak++;
       current = addDays(current, -1);
@@ -83,8 +84,8 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
 
     const activityMap: Record<string, number> = {};
     for (let i = 0; i < 30; i++) {
-      const d = addDays(new Date(), -i);
-      const key = format(d, "yyyy-MM-dd");
+      const d = addDays(getIsraelToday(), -i);
+      const key = formatIsraelDay(d);
       activityMap[key] = optimisticQuestions.filter((q) => {
         if (q.status !== "Completed") return false;
         const qDate = q.type === "New" ? q.dateAdded.split("T")[0] : q.nextReviewDate.split("T")[0];
@@ -102,7 +103,7 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
     url: string,
     date: Date
   ) => {
-    const dateStr = format(date, "yyyy-MM-dd");
+    const dateStr = formatIsraelDay(date);
     const tempId = Math.random().toString();
     
     startTransition(async () => {

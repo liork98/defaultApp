@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase-server'
 import { revalidatePath } from 'next/cache'
 import { Difficulty, Question, QuestionStatus, QuestionType } from './types'
 import { addDays, format, parseISO } from 'date-fns'
+import { formatIsraelDay } from './utils'
 
 function toIsoFromLocalDate(d: Date) {
   const x = new Date(d);
@@ -131,7 +132,7 @@ export async function tryAgainAction(id: string) {
   const baseDate = parseISO(original.scheduled_date)
   baseDate.setHours(12, 0, 0, 0)
   const threeDaysLater = addDays(baseDate, 3)
-  const threeDaysLaterStr = format(threeDaysLater, 'yyyy-MM-dd')
+  const threeDaysLaterStr = formatIsraelDay(threeDaysLater)
 
   // Mark original as failed
   const { error: updateError } = await supabase
