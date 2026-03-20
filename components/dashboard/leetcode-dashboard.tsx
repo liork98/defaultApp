@@ -38,7 +38,7 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
           if (!target) return state;
           // target.dateAdded is a "YYYY-MM-DD" string
           const baseDate = parseIsraelDay(target.dateAdded);
-          const threeDaysLaterStr = formatIsraelDay(addDays(baseDate, 3));
+          const threeDaysLaterStr = format(addDays(baseDate, 3), "yyyy-MM-dd");
           return state
             .map((q) => (q.id === action.payload.id ? { ...q, status: "Failed" } : q))
             .concat({
@@ -106,9 +106,9 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
     difficulty: Difficulty,
     type: QuestionType,
     url: string,
-    date: Date
+    date: Date // The modal still provides a Date object
   ) => {
-    const dateStr = formatIsraelDay(date);
+    const dateStr = format(date, "yyyy-MM-dd");
     const tempId = Math.random().toString();
     
     startTransition(async () => {
@@ -177,7 +177,7 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
         {/* Calendar Header */}
         <CalendarHeader
           selectedDate={selectedDateObj}
-          onDateChange={(date) => setSelectedDateStr(formatIsraelDay(date))}
+          onDateChange={(date) => setSelectedDateStr(format(date, "yyyy-MM-dd"))}
           activityMap={getStatistics.activityMap}
         />
 

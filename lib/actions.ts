@@ -4,7 +4,8 @@ import { createClient } from '@/lib/supabase-server'
 import { revalidatePath } from 'next/cache'
 import { Difficulty, Question, QuestionStatus, QuestionType } from './types'
 import { addDays, format, parseISO } from 'date-fns'
-import { formatIsraelDay, parseIsraelDay } from './utils'
+import { formatIsraelDay, parseIsraelDay, ISRAEL_TZ } from './utils'
+import { toZonedTime } from 'date-fns-tz'
 
 export async function getQuestions() {
   const supabase = await createClient()
@@ -126,7 +127,7 @@ export async function tryAgainAction(id: string) {
   // original.scheduled_date is "YYYY-MM-DD" from DB
   const baseDate = parseIsraelDay(original.scheduled_date)
   const threeDaysLater = addDays(baseDate, 3)
-  const threeDaysLaterStr = formatIsraelDay(threeDaysLater)
+  const threeDaysLaterStr = format(threeDaysLater, 'yyyy-MM-dd')
 
   // Mark original as failed
   const { error: updateError } = await supabase

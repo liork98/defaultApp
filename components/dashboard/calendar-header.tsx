@@ -100,7 +100,7 @@ export function CalendarHeader({
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {visibleDays.map((day) => {
-          const dateStr = formatIsraelDay(day);
+          const dateStr = format(day, "yyyy-MM-dd");
           const isSelected = isSameDay(day, selectedDate);
           const isTodayDate = isSameDay(day, parseIsraelDay(getIsraelTodayStr()));
           const hasActivity = (activityMap[dateStr] || 0) > 0;
