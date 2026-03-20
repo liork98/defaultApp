@@ -36,7 +36,8 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
         case "TRY_AGAIN":
           const target = state.find((q) => q.id === action.payload.id);
           if (!target) return state;
-          const baseDate = parseIsraelDay(target.dateAdded.split("T")[0]);
+          // target.dateAdded is a "YYYY-MM-DD" string
+          const baseDate = parseIsraelDay(target.dateAdded);
           const threeDaysLaterStr = formatIsraelDay(addDays(baseDate, 3));
           return state
             .map((q) => (q.id === action.payload.id ? { ...q, status: "Failed" } : q))
@@ -70,7 +71,10 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
     const completedDayKeys = new Set(
       optimisticQuestions
         .filter((q) => q.status === "Completed")
-        .map((q) => (q.type === "New" ? q.dateAdded.split("T")[0] : q.nextReviewDate.split("T")[0]))
+        .map((q) => {
+          // Both dateAdded and nextReviewDate are already "YYYY-MM-DD" strings in our system
+          return q.type === "New" ? q.dateAdded : q.nextReviewDate;
+        })
     );
 
     let streak = 0;
@@ -89,7 +93,7 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
       const key = formatIsraelDay(d);
       activityMap[key] = optimisticQuestions.filter((q) => {
         if (q.status !== "Completed") return false;
-        const qDate = q.type === "New" ? q.dateAdded.split("T")[0] : q.nextReviewDate.split("T")[0];
+        const qDate = q.type === "New" ? q.dateAdded : q.nextReviewDate;
         return qDate === key;
       }).length;
     }

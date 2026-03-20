@@ -9,13 +9,14 @@ import {
   addDays,
   subDays,
   isSameDay,
-  isToday,
   startOfMonth,
   endOfMonth,
   eachDayOfInterval,
 } from "date-fns";
 import { useMemo, useRef, useEffect } from "react";
 import { getIsraelTodayStr, formatIsraelDay, parseIsraelDay } from "@/lib/utils";
+import { toZonedTime } from "date-fns-tz";
+import { ISRAEL_TZ } from "@/lib/utils";
 
 interface CalendarHeaderProps {
   selectedDate: Date;
@@ -31,10 +32,15 @@ export function CalendarHeader({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Generate visible days - current month plus some buffer
+  // We use the Jerusalem timezone for all calculations to avoid shifting days on Vercel
   const visibleDays = useMemo(() => {
-    const start = subDays(startOfMonth(selectedDate), 7);
-    const end = addDays(endOfMonth(selectedDate), 7);
-    return eachDayOfInterval({ start, end });
+    const zonedDate = toZonedTime(selectedDate, ISRAEL_TZ);
+    const start = subDays(startOfMonth(zonedDate), 7);
+    const end = addDays(endOfMonth(zonedDate), 7);
+    const days = eachDayOfInterval({ start, end });
+    
+    // Convert each day to Jerusalem noon to be safe for UI display
+    return days.map(d => parseIsraelDay(format(d, "yyyy-MM-dd")));
   }, [selectedDate]);
 
   // Scroll to selected date on mount and when date changes

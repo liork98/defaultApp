@@ -4,13 +4,7 @@ import { createClient } from '@/lib/supabase-server'
 import { revalidatePath } from 'next/cache'
 import { Difficulty, Question, QuestionStatus, QuestionType } from './types'
 import { addDays, format, parseISO } from 'date-fns'
-import { formatIsraelDay } from './utils'
-
-function toIsoFromLocalDate(d: Date) {
-  const x = new Date(d);
-  x.setHours(12, 0, 0, 0); // Avoid date shifting across timezones
-  return x.toISOString();
-}
+import { formatIsraelDay, parseIsraelDay } from './utils'
 
 export async function getQuestions() {
   const supabase = await createClient()
@@ -129,8 +123,8 @@ export async function tryAgainAction(id: string) {
 
   if (fetchError || !original) throw fetchError || new Error('Question not found')
 
-  const baseDate = parseISO(original.scheduled_date)
-  baseDate.setHours(12, 0, 0, 0)
+  // original.scheduled_date is "YYYY-MM-DD" from DB
+  const baseDate = parseIsraelDay(original.scheduled_date)
   const threeDaysLater = addDays(baseDate, 3)
   const threeDaysLaterStr = formatIsraelDay(threeDaysLater)
 
