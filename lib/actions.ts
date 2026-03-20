@@ -162,6 +162,37 @@ export async function tryAgainAction(id: string) {
   revalidatePath('/')
 }
 
+export async function getHistoricalQuestions() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) return []
+
+  // Fetch unique questions by title
+  // We can use a group by or distinct on if supported, 
+  // but for simplicity and compatibility, we'll fetch all and filter unique titles in JS
+  const { data, error } = await supabase
+    .from('questions')
+    .select('title, url, difficulty')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching historical questions:', error)
+    return []
+  }
+
+  // Filter unique titles
+  const uniqueQuestions: Record<string, { title: string; url: string; difficulty: Difficulty }> = {}
+  data.forEach(q => {
+    if (!uniqueQuestions[q.title]) {
+      uniqueQuestions[q.title] = q
+    }
+  })
+
+  return Object.values(uniqueQuestions)
+}
+
 export async function deleteQuestionAction(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

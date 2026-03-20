@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,22 @@ import { FieldGroup, Field, FieldLabel } from "@/components/ui/field";
 import { Difficulty, QuestionType } from "@/lib/types";
 import { format } from "date-fns";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { getHistoricalQuestions } from "@/lib/actions";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AddQuestionModalProps {
   open: boolean;
@@ -36,6 +52,12 @@ interface AddQuestionModalProps {
   selectedDate: Date;
 }
 
+interface HistoricalQuestion {
+  title: string;
+  url: string;
+  difficulty: Difficulty;
+}
+
 export function AddQuestionModal({
   open,
   onOpenChange,
@@ -46,6 +68,18 @@ export function AddQuestionModal({
   const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
   const [type, setType] = useState<QuestionType>("New");
   const [url, setUrl] = useState("");
+  const [historicalQuestions, setHistoricalQuestions] = useState<HistoricalQuestion[]>([]);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      const fetchHistory = async () => {
+        const history = await getHistoricalQuestions();
+        setHistoricalQuestions(history as HistoricalQuestion[]);
+      };
+      fetchHistory();
+    }
+  }, [open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +100,13 @@ export function AddQuestionModal({
     }
   };
 
+  const handleSelectHistorical = (q: HistoricalQuestion) => {
+    setTitle(q.title);
+    setUrl(q.url);
+    setDifficulty(q.difficulty);
+    setPopoverOpen(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="border-border/50 bg-card sm:max-w-md">
@@ -81,12 +122,53 @@ export function AddQuestionModal({
           <FieldGroup className="gap-4">
             <Field>
               <FieldLabel>Title</FieldLabel>
-              <Input
-                placeholder="e.g., Two Sum"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="bg-background/50"
-              />
+              <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={popoverOpen}
+                    className="w-full justify-between bg-background/50 font-normal"
+                  >
+                    {title || "Select or type a title..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                  <Command className="w-full">
+                    <CommandInput 
+                      placeholder="Search historical questions..." 
+                      value={title}
+                      onValueChange={setTitle}
+                    />
+                    <CommandList>
+                      <CommandEmpty>No historical question found.</CommandEmpty>
+                      <CommandGroup heading="Suggestions">
+                        {historicalQuestions.map((q) => (
+                          <CommandItem
+                            key={q.title}
+                            value={q.title}
+                            onSelect={() => handleSelectHistorical(q)}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                title === q.title ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <div className="flex flex-col">
+                              <span>{q.title}</span>
+                              <span className="text-[10px] text-muted-foreground truncate max-w-[200px]">
+                                {q.url}
+                              </span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </Field>
 
             <Field>
