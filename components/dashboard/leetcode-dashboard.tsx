@@ -106,8 +106,14 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
     difficulty: Difficulty,
     type: QuestionType,
     url: string,
-    dateStr: string
+    dateStr: string | any // אנחנו מאפשרים קבלה של Date כדי שנוכל לתקן אותו
   ) => {
+    
+    // 🛡️ שומר הסף הראשי: מבטיח שמה שעובר לשרת ול-State הוא רק טקסט נקי
+    const safeDateString = dateStr instanceof Date 
+      ? formatIsraelDay(dateStr) 
+      : dateStr;
+
     const tempId = Math.random().toString();
     
     startTransition(async () => {
@@ -120,11 +126,12 @@ export function LeetCodeDashboard({ initialQuestions }: { initialQuestions: Ques
           type,
           url,
           status: "Pending",
-          dateAdded: dateStr,
-          nextReviewDate: dateStr,
+          dateAdded: safeDateString, // משתמשים במחרוזת הבטוחה
+          nextReviewDate: safeDateString, // משתמשים במחרוזת הבטוחה
         },
       });
-      await addQuestionAction(title, difficulty, type, url, dateStr);
+      // 🚀 השרת בחיים לא יקבל פה אובייקט Date יותר
+      await addQuestionAction(title, difficulty, type, url, safeDateString);
     });
   };
 
