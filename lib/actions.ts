@@ -52,6 +52,23 @@ export async function addQuestionAction(
   
   if (!user) throw new Error('Unauthorized')
 
+  // Ensure profile exists (fallback if trigger didn't run)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile) {
+    await supabase.from('profiles').insert([
+      { 
+        id: user.id, 
+        username: user.email?.split('@')[0],
+        avatar_url: user.user_metadata?.avatar_url 
+      }
+    ])
+  }
+
   const scheduledDate = format(date, 'yyyy-MM-dd')
 
   const { data, error } = await supabase
@@ -70,7 +87,10 @@ export async function addQuestionAction(
     .select()
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('Database error adding question:', error)
+    throw new Error(error.message)
+  }
 
   revalidatePath('/')
   return data
